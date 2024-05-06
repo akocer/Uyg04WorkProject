@@ -100,7 +100,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("corspolicy");
 app.UseAuthorization();
 
 app.MapControllers();

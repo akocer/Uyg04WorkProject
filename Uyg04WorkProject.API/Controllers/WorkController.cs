@@ -9,9 +9,9 @@ using Uyg04WorkProject.API.Models;
 
 namespace Uyg04WorkProject.API.Controllers
 {
-    [Route("api/Works")]
+    [Route("api/Work")]
     [ApiController]
-    [Authorize]
+    // [Authorize]
     public class WorkController : ControllerBase
     {
         private readonly AppDbContext _context;
