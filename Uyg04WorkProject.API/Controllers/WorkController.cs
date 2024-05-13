@@ -11,7 +11,7 @@ namespace Uyg04WorkProject.API.Controllers
 {
     [Route("api/Work")]
     [ApiController]
-    // [Authorize]
+    [Authorize]
     public class WorkController : ControllerBase
     {
         private readonly AppDbContext _context;

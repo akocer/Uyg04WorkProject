@@ -1,1 +1,12 @@
 ﻿<h1 class="h3 mb-4 text-gray-800">Blank Page</h1>
+
+@section Scripts{
+
+    <script>
+        var token = localStorage.getItem("token");
+        if (token == "" || token == null) {
+            location.href = "/Home/Login";
+            return false;
+        }
+    </script>
+}

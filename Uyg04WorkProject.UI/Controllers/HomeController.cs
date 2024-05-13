@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using Uyg04WorkProject.UI.Models;
 
 namespace Uyg04WorkProject.UI.Controllers
 {
+
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -38,7 +40,12 @@ namespace Uyg04WorkProject.UI.Controllers
             return View();
         }
 
-
+        public IActionResult Login()
+        {
+            string ApiBaseUrl = _configuration["ApiBaseUrl"]!;
+            ViewBag.ApiBaseUrl = ApiBaseUrl;
+            return View();
+        }
 
 
 
