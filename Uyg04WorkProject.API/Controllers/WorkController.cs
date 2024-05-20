@@ -27,11 +27,18 @@ namespace Uyg04WorkProject.API.Controllers
 
         public async Task<List<WorkDto>> List()
         {
-            var works = await _context.Works.ToListAsync();
+            var works = await _context.Works.OrderBy(o => o.Order).ToListAsync();
             var workDtos = _mapper.Map<List<WorkDto>>(works);
             return workDtos;
         }
 
+        [HttpGet("{id}")]
+        public async Task<WorkDto> Get(int id)
+        {
+            var works = await _context.Works.Where(s => s.Id == id).SingleOrDefaultAsync();
+            var workDto = _mapper.Map<WorkDto>(works);
+            return workDto;
+        }
         [HttpPost]
         public async Task<ResultDto> Add(WorkDto dto)
         {
@@ -79,7 +86,7 @@ namespace Uyg04WorkProject.API.Controllers
             return result;
         }
         [HttpDelete]
-        [Route("id")]
+        [Route("{id}")]
         public async Task<ResultDto> Delete(int id)
         {
 
@@ -104,5 +111,23 @@ namespace Uyg04WorkProject.API.Controllers
             result.Message = "Kayıt Silindi";
             return result;
         }
+
+        [HttpPost]
+        [Route("WorkOrderAjax")]
+        public ResultDto WorkOrderAjax(int[] ids)
+        {
+            for (int i = 0; i < ids.Length; i++)
+            {
+                var work = _context.Works.Where(s => s.Id == ids[i]).SingleOrDefault();
+                work.Order = i + 1;
+                _context.SaveChanges();
+
+            }
+            result.Status = true;
+            result.Message = "Sıralandı...";
+            return result;
+
+        }
+
     }
 }

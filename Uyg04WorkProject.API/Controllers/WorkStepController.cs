@@ -99,5 +99,21 @@ namespace Uyg04WorkProject.API.Controllers
             result.Message = "Kayıt Silindi";
             return result;
         }
+        [HttpPost]
+        [Route("WorkStepOrderAjax")]
+        public ResultDto WorkStepOrderAjax(int[] ids)
+        {
+            for (int i = 0; i < ids.Length; i++)
+            {
+                var workstep = _context.WorkSteps.Where(s => s.Id == ids[i]).SingleOrDefault();
+                workstep.Order = i + 1;
+                _context.SaveChanges();
+
+            }
+            result.Status = true;
+            result.Message = "Sıralandı...";
+            return result;
+
+        }
     }
 }

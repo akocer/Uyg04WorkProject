@@ -30,9 +30,12 @@
             <textarea type="text" rows="3" class="form-control" id="txtDescription"></textarea>
         </div>
         <div class="mb-2">
-
+            <input type="hidden" id="txtId" />
             <a id="btnCancel" class="btn btn-danger btn-circle" title="Vazgeç"><i class="fas fa-arrow-left"></i></a>
             <a id="btnSave" class="btn btn-primary btn-circle ml-1" title="Kaydet"><i class="fas fa-save"></i></a>
+            <a href="#" class="btn btn-danger btn-circle delete" title="Sil" id="btnDelete">
+                <i class="fas fa-trash"></i>
+            </a>
         </div>
 
         <div class="alert" id="divResult"></div>
@@ -68,16 +71,35 @@
 
                     $("#tbWorkList tbody tr").each(function () {
                         ids.push($(this).attr("id"));
-                        MenuSort(ids);
+
                     });
+                    WorkSort(ids);
                 }
             });
 
+            function WorkSort(ids) {
 
+                $.ajax({
+                    url: ApiBaseUrl + "Work/WorkOrderAjax",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    data: JSON.stringify(ids),
+                    success: function () {
+                        GetWorkList();
+                    },
+                    error: function () { }
+                });
+
+            }
 
             $("#btnSave").click(function () {
                 var title = $("#txtTitle").val();
                 var description = $("#txtDescription").val();
+                var id = $("#txtId").val();
+
                 if (title == "" || description == "") {
                     $("#divResult")
                         .show()
@@ -90,10 +112,18 @@
                 var work = new Object();
                 work.Title = title;
                 work.Description = description;
+                work.Id = id;
+                var ajaxMetod = "";
+                if (id == 0) {
+                    ajaxMetod = "POST";
 
+                }
+                else {
+                    ajaxMetod = "PUT";
+                }
                 $.ajax({
                     url: ApiBaseUrl + "Work",
-                    method: "POST",
+                    method: ajaxMetod,
                     data: JSON.stringify(work),
                     headers: {
                         "Authorization": "Bearer " + token
@@ -145,31 +175,94 @@
             }
 
             function WorkDataToTable(data) {
-                console.log(data);
+                $("#txtId").val("0");
+                $("#btnDelete").hide();
                 var tr = "";
                 $.each(data, function (i, item) {
-                    tr += `<tr>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>${(i + 1)}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>${item.title}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>${item.score}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <a href="#" class="btn btn-primary btn-circle move" title="Taşı">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-arrows"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </a>                                                                                             <a href="/Home/WorkSteps/${item.id}" class="btn btn-primary btn-circle" title="Detay">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-search"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </a>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <a href="#" class="btn btn-primary btn-circle" title="Düzenle">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-pencil"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </a>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <a href="#" class="btn btn-danger btn-circle" title="Sil">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-trash"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </a>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </tr>`;
+                    tr += `<tr id="${(item.id)}">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>${(i + 1)}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>${item.title}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>${item.score}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <a href="#" class="btn btn-primary btn-circle move" title="Taşı">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-arrows"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </a>                                                                                             <a href="/Home/WorkSteps/${item.id}" class="btn btn-primary btn-circle" title="Detay">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-search"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </a>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <a href="#" class="btn btn-primary btn-circle edit" title="Düzenle Sil">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-pencil"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </a>
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </tr>`;
                 });
                 $("#tbWorkList tbody").empty();
                 $("#tbWorkList tbody").append(tr);
             }
+
+
+
+            $(document).on("click", ".edit", function () {
+                var id = $(this).closest("tr").attr("id");
+                $("#txtId").val(id);
+                $("#btnDelete").show();
+                $.ajax({
+                    url: ApiBaseUrl + "Work/" + id,
+                    method: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    contentType: "application/json",
+                    success: function (data) {
+                        $("#txtTitle").val(data.title);
+                        $("#txtDescription").val(data.description);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+
+            });
+
+            $("#btnCancel").click(function () {
+                $("#txtTitle").val("");
+                $("#txtDescription").val("");
+                $("#txtId").val("0");
+                $("#btnDelete").hide();
+            });
+
+            $("#btnDelete").click(function () {
+                var id = $("#txtId").val();
+                $.ajax({
+                    url: ApiBaseUrl + "Work/" + id,
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.status) {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-success")
+                                .html(data.message)
+                                .fadeOut(5000);
+                            GetWorkList();
+                        } else {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-danger")
+                                .html(data.message)
+                                .fadeOut(5000);
+                        }
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            });
 
         });
     </script>

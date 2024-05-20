@@ -1,6 +1,283 @@
 ﻿@{
-    ViewData["Title"] = "WorkSteps";
+    ViewData["Title"] = "Index";
 }
 
-<h1>WorkSteps</h1>
 
+<div class="row">
+    <div class="col-md-8">
+        <h2 class="h3 mb-4 text-gray-800">İşlem Basamakları</h2>
+        <table class="table" id="tbWorkStepList">
+            <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>Başlık</th>
+                    <th>Skor</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h2 class="h3 mb-4 text-gray-800">İş Adımı Ekle - Düzenle</h2>
+        <div class="mb-2">
+            <label>Başlık</label>
+            <input type="text" class="form-control" id="txtTitle" />
+        </div>
+        <div class="mb-2">
+            <label>Durumu</label>
+            <select id="cbStatus" class="form-control">
+                <option value="0">Planda</option>
+                <option value="1">Devam Ediyor</option>
+                <option value="2">Tamamlandı</option>
+            </select>
+        </div>
+        <div class="mb-2">
+            <label>Puan</label>
+            <input type="number" class="form-control" id="txtScore" />
+        </div>
+        <div class="mb-2">
+            <input type="hidden" id="txtId" />
+            <a id="btnCancel" class="btn btn-danger btn-circle" title="Vazgeç"><i class="fas fa-arrow-left"></i></a>
+            <a id="btnSave" class="btn btn-primary btn-circle ml-1" title="Kaydet"><i class="fas fa-save"></i></a>
+            <a href="#" class="btn btn-danger btn-circle delete" title="Sil" id="btnDelete">
+                <i class="fas fa-trash"></i>
+            </a>
+        </div>
+
+        <div class="alert" id="divResult"></div>
+    </div>
+</div>
+
+
+
+
+@section Scripts{
+    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var token = localStorage.getItem("token");
+            if (token == "" || token == null) {
+                location.href = "/Home/Login";
+                return false;
+            }
+
+            var ApiBaseUrl = "@ViewBag.ApiBaseUrl";
+            var workId = "@ViewBag.WorkId";
+            GetWorkStepList();
+
+
+
+            $("#tbWorkStepList tbody").sortable({
+                placeholder: "bg-secodary",
+                axis: "y",
+                handle: '.move',
+                cancel: '',
+                update: function (event, ui) {
+                    var ids = new Array();
+
+                    $("#tbWorkStepList tbody tr").each(function () {
+                        ids.push($(this).attr("id"));
+
+                    });
+                    WorkStepSort(ids);
+                }
+            });
+
+            function WorkStepSort(ids) {
+
+                $.ajax({
+                    url: ApiBaseUrl + "WorkStep/WorkStepOrderAjax",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    data: JSON.stringify(ids),
+                    success: function () {
+                        GetWorkStepList();
+                    },
+                    error: function () { }
+                });
+
+            }
+
+            $("#btnSave").click(function () {
+                var title = $("#txtTitle").val();
+                var status = $("#cbStatus").val();
+                var score = $("#txtScore").val();
+                var id = $("#txtId").val();
+
+                if (title == "" || score == "") {
+                    $("#divResult")
+                        .show()
+                        .removeClass()
+                        .addClass("alert alert-danger")
+                        .html("Tüm Alanları Doldurunuz!")
+                        .fadeOut(5000);
+                    return false;
+                }
+                var workStep = new Object();
+                workStep.Title = title;
+                workStep.Status = status;
+                workStep.Score = score;
+                workStep.WorkId = workId;
+                workStep.Id = id;
+                var ajaxMetod = "";
+                if (id == 0) {
+                    ajaxMetod = "POST";
+
+                }
+                else {
+                    ajaxMetod = "PUT";
+                }
+                $.ajax({
+                    url: ApiBaseUrl + "WorkStep",
+                    method: ajaxMetod,
+                    data: JSON.stringify(workStep),
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.status) {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-success")
+                                .html(data.message)
+                                .fadeOut(5000);
+                            GetWorkStepList();
+                        } else {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-danger")
+                                .html(data.message)
+                                .fadeOut(5000);
+                        }
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+
+            });
+
+
+
+
+
+
+            function GetWorkStepList() {
+                $.ajax({
+                    url: ApiBaseUrl + "WorkStep",
+                    method: "GET",
+                    contentType: "application/json",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (data) {
+                        WorkStepDataToTable(data);
+                    },
+                    error: function () { }
+                });
+            }
+
+            function WorkStepDataToTable(data) {
+                $("#txtId").val("0");
+                $("#btnDelete").hide();
+                var tr = "";
+                $.each(data, function (i, item) {
+                    tr += `<tr id="${(item.id)}">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>${(i + 1)}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>${item.title}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>${item.score}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <a href="#" class="btn btn-primary btn-circle move" title="Taşı">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-arrows"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </a>                                                                                             <a href="/Home/WorkStepSteps/${item.id}" class="btn btn-primary btn-circle" title="Detay">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-search"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <a href="#" class="btn btn-primary btn-circle edit" title="Düzenle Sil">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-pencil"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </a>
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </tr>`;
+                });
+                $("#tbWorkStepList tbody").empty();
+                $("#tbWorkStepList tbody").append(tr);
+            }
+
+
+
+            $(document).on("click", ".edit", function () {
+                var id = $(this).closest("tr").attr("id");
+                $("#txtId").val(id);
+                $("#btnDelete").show();
+                $.ajax({
+                    url: ApiBaseUrl + "WorkStep/" + id,
+                    method: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    contentType: "application/json",
+                    success: function (data) {
+                        $("#txtTitle").val(data.title);
+                        $("#cbStatus").val(data.status);
+                        $("#txtScore").val(data.score);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+
+            });
+
+            $("#btnCancel").click(function () {
+                $("#txtTitle").val("");
+                $("#txtScore").val("");
+                $("#cbStatus").val(0);
+                $("#txtId").val("0");
+                $("#btnDelete").hide();
+            });
+
+            $("#btnDelete").click(function () {
+                var id = $("#txtId").val();
+                $.ajax({
+                    url: ApiBaseUrl + "WorkStep/" + id,
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.status) {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-success")
+                                .html(data.message)
+                                .fadeOut(5000);
+                            GetWorkStepList();
+                        } else {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-danger")
+                                .html(data.message)
+                                .fadeOut(5000);
+                        }
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            });
+
+        });
+    </script>
+}
