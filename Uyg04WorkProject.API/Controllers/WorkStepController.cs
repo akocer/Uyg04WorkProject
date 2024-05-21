@@ -23,16 +23,25 @@ namespace Uyg04WorkProject.API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-
-        public async Task<List<WorkStepDto>> List()
+		[HttpGet("{id}")]
+        
+		public async Task<List<WorkStepDto>> List(int id)
         {
-            var works = await _context.WorkSteps.ToListAsync();
+            var works = await _context.WorkSteps.Where(s=>s.WorkId==id).OrderBy(o=>o.Order).ToListAsync();
             var workDtos = _mapper.Map<List<WorkStepDto>>(works);
             return workDtos;
         }
 
-        [HttpPost]
+		[HttpGet()]
+		[Route("GetById/{id}")]
+		public async Task<WorkStepDto> Get(int id)
+		{
+			var work = await _context.WorkSteps.Where(s=>s.Id==id).SingleOrDefaultAsync();
+			var workDto = _mapper.Map<WorkStepDto>(work);
+			return workDto;
+		}
+
+		[HttpPost]
         public async Task<ResultDto> Add(WorkStepDto dto)
         {
             if (_context.WorkSteps.Count(c => c.Title == dto.Title && c.WorkId == dto.WorkId) > 0)
@@ -53,6 +62,7 @@ namespace Uyg04WorkProject.API.Controllers
             await _context.WorkSteps.AddAsync(workstep);
             await _context.SaveChangesAsync();
 
+            ScoreCalcualte(dto.WorkId);
             result.Status = true;
             result.Message = "Kayıt Eklendi";
             return result;
@@ -70,12 +80,14 @@ namespace Uyg04WorkProject.API.Controllers
             }
             workstep.Title = dto.Title;
             workstep.Status = dto.Status;
+            workstep.Score = dto.Score;
             workstep.Updated = DateTime.Now;
 
             _context.WorkSteps.UpdateRange(workstep);
             await _context.SaveChangesAsync();
             result.Status = true;
             result.Message = "Kayıt Güncellendi";
+            ScoreCalcualte(dto.WorkId);
             return result;
         }
         [HttpDelete]
@@ -97,6 +109,7 @@ namespace Uyg04WorkProject.API.Controllers
             await _context.SaveChangesAsync();
             result.Status = true;
             result.Message = "Kayıt Silindi";
+            ScoreCalcualte(id);
             return result;
         }
         [HttpPost]
@@ -114,6 +127,19 @@ namespace Uyg04WorkProject.API.Controllers
             result.Message = "Sıralandı...";
             return result;
 
+        }
+        private void ScoreCalcualte(int workId)
+        {
+            int totalscore = _context.WorkSteps.Where(s => s.WorkId == workId).Sum(x => x.Score);
+            int okscore = _context.WorkSteps.Where(s => s.WorkId == workId && s.Status == 2).Sum(x => x.Score);
+            int score = 0;
+            if (okscore > 0 && totalscore > 0)
+            {
+                score = 100 * okscore / totalscore;
+            }
+            var work = _context.Works.Where(s => s.Id == workId).FirstOrDefault();
+            work.Score = score;
+            _context.SaveChanges();
         }
     }
 }
