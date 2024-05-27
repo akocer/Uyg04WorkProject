@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualBasic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -72,6 +73,27 @@ namespace Uyg04WorkProject.API.Controllers
             await _userManager.AddToRoleAsync(user, "Uye");
             result.Status = true;
             result.Message = "Üye Eklendi";
+            return result;
+        }
+
+        [HttpPut]
+        public async Task<ResultDto> Update(RegisterDto dto)
+        {
+            var user = await _userManager.FindByNameAsync(dto.UserName);
+            if (user == null)
+            {
+                result.Status = false;
+                result.Message = "Kullanıcı Blunamadı!";
+            }
+
+            user.PhoneNumber = dto.PhoneNumber;
+            user.FullName = dto.FullName;
+            user.Email = dto.Email;
+
+            await _userManager.UpdateAsync(user);
+            result.Status = true;
+            result.Message = "Kullanıcı Güncellendi";
+
             return result;
         }
 

@@ -42,11 +42,26 @@
                             <div class="col-lg-6">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Oturum Açınız</h1>
+                                        <h1 class="h4 text-gray-900 mb-4">Yeni Kayıt</h1>
                                     </div>
                                     <form class="user">
                                         <div class="form-group">
+                                            <input type="text" class="form-control form-control-user"
+                                                   id="txtFullName" aria-describedby="emailHelp"
+                                                   placeholder="Adı Soyadı">
+                                        </div>
+                                        <div class="form-group">
                                             <input type="email" class="form-control form-control-user"
+                                                   id="txtEmail" aria-describedby="emailHelp"
+                                                   placeholder="E-Posta Adresi">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" class="form-control form-control-user"
+                                                   id="txtPhoneNumber" aria-describedby="emailHelp"
+                                                   placeholder="Telefon Numarası">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" class="form-control form-control-user"
                                                    id="txtUserName" aria-describedby="emailHelp"
                                                    placeholder="Kullanıcı Adı">
                                         </div>
@@ -55,8 +70,8 @@
                                                    id="txtPassword" placeholder="Parola">
                                         </div>
 
-                                        <a class="btn btn-primary btn-user btn-block" id="btnLogin">
-                                            Oturum Aç
+                                        <a class="btn btn-primary btn-user btn-block" id="btnSignIn">
+                                            Kayıt Ol
                                         </a>
 
                                     </form>
@@ -67,7 +82,7 @@
                                     <a class="small" href="forgot-password.html">Forgot Password?</a>
                                     </div>*@
                                     <div class="text-center">
-                                        <a class="small" href="~/Home/SignIn">Kayıt Ol</a>
+                                        <a class="small" href="~/Home/Login">Oturum Aç</a>
                                     </div>
                                 </div>
                             </div>
@@ -93,12 +108,15 @@
     <script>
         $(document).ready(function () {
             var ApiBaseUrl = "@ViewBag.ApiBaseUrl";
-            $("#btnLogin").click(function () {
+            $("#btnSignIn").click(function () {
 
                 var username = $("#txtUserName").val();
                 var password = $("#txtPassword").val();
+                var fullname = $("#txtFullName").val();
+                var phonenumber = $("#txtPhoneNumber").val();
+                var email = $("#txtEmail").val();
 
-                if (username == "" || password == "") {
+                if (username == "" || password == "" || fullname == "" || email == "" || phonenumber == "") {
                     $("#divResult")
                         .show()
                         .removeClass()
@@ -107,26 +125,28 @@
                         .fadeOut(5000);
                     return false;
                 }
-                var login = new Object();
-                login.UserName = username;
-                login.Password = password;
+                var register = new Object();
+                register.UserName = username;
+                register.Password = password;
+                register.FullName = fullname;
+                register.PhoneNumber = phonenumber;
+                register.Email = email;
 
                 $.ajax({
-                    url: ApiBaseUrl + "User/SignIn",
+                    url: ApiBaseUrl + "User/Add",
                     method: "POST",
-                    data: JSON.stringify(login),
+                    data: JSON.stringify(register),
                     contentType: "application/json",
                     success: function (data) {
                         if (data.status) {
-                            localStorage.setItem("token", data.message);
-                            location.href = "/Home/Index";
+                            location.href = "/Home/Login";
                         } else {
                             $("#divResult")
                                 .show()
                                 .removeClass()
                                 .addClass("alert alert-danger")
                                 .html(data.message)
-                                .fadeOut(3000);
+                                .fadeOut(10000);
 
                         }
                     },

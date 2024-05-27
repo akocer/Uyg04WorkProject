@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "Profile";
 }
 
@@ -12,7 +11,7 @@
         </div>
         <div class="mb-2">
             <label>Kullanıcı Adı</label>
-            <input type="text" id="txtUserName" class="form-control" />
+            <input type="text" id="txtUserName" class="form-control" readonly="readonly" />
         </div>
         <div class="mb-2">
             <label>E-Posta</label>
@@ -25,11 +24,11 @@
         <button class="btn btn-primary" id="btnSave">Kaydet</button>
     </div>
     <div class="col-md-4">
-        <img src="" id="userPicture" class="img-profile rounded-circle" style="width:300px"/>
+        <img src="" id="userPicture" class="img-profile rounded-circle" style="width:300px" />
         <input id="fileInput" type="file" accept="image/gif, image/jpeg, image/png" class="btn btn-primary" />
         <div id="divResult"></div>
     </div>
-  
+
 </div>
 
 
@@ -51,15 +50,15 @@
 
             function GetUserInfo() {
                 $.ajax({
-                    url: ApiBaseUrl + "User/GetById/"+userId,
+                    url: ApiBaseUrl + "User/GetById/" + userId,
                     type: "Get",
                     contentType: "application/json",
                     headers: {
                         "Authorization": "Bearer " + token
                     },
                     success: function (data) {
-                       // console.log(data);
-                        $("#userPicture").attr("src", apiUrl +"Profile/"+ data.picUrl);
+                        // console.log(data);
+                        $("#userPicture").attr("src", apiUrl + "Profile/" + data.picUrl);
                         $("#txtFullName").val(data.fullName);
                         $("#txtUserName").val(data.userName);
                         $("#txtEmail").val(data.email);
@@ -72,7 +71,7 @@
             }
 
             $("#fileInput").change(function () {
-               var files = $(this).prop('files');
+                var files = $(this).prop('files');
                 console.log(files);
                 if (files && files[0]) {
                     var picExt = ".jpg";
@@ -109,7 +108,7 @@
                                 .addClass("alert alert-success")
                                 .html(data.message)
                                 .fadeOut(5000);
-                           
+
                         } else {
                             $("#divResult")
                                 .show()
@@ -124,7 +123,55 @@
                 });
             }
 
+
+            $("#btnSave").click(function () {
+                var fullName = $("#txtFullName").val();
+                var userName = $("#txtUserName").val();
+                var email = $("#txtEmail").val();
+                var phoneNumber = $("#txtPhone").val();
+
+                var register = new Object();
+                register.FullName = fullName;
+                register.UserName = userName;
+                register.Email = email;
+                register.PhoneNumber = phoneNumber;
+                register.Id = userId;
+                console.log(register);
+
+                $.ajax({
+                    url: ApiBaseUrl + "User/Update",
+                    type: "Put",
+                    contentType: "application/json",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    data: JSON.stringify(register),
+                    success: function (data) {
+                        console.log(data);
+                        if (data.status) {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-success")
+                                .html(data.message)
+                                .fadeOut(5000);
+
+                        } else {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-danger")
+                                .html(data.message)
+                                .fadeOut(5000);
+                        }
+
+                    },
+                    error: function () { }
+                });
+
+            });
+
         });
-        
+
     </script>
 }
