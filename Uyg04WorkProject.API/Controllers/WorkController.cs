@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -27,7 +26,19 @@ namespace Uyg04WorkProject.API.Controllers
 
         public async Task<List<WorkDto>> List()
         {
-            var works = await _context.Works.OrderBy(o => o.Order).ToListAsync();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var roles = User.FindAll(ClaimTypes.Role);
+            var works = new List<Work>();
+
+            if (roles.Any(c => c.Value == "Admin"))
+            {
+                works = await _context.Works.OrderBy(o => o.Order).ToListAsync();
+            }
+            else
+            {
+                works = await _context.Works.Where(s => s.AppUserId == userId).OrderBy(o => o.Order).ToListAsync();
+            }
+
             var workDtos = _mapper.Map<List<WorkDto>>(works);
             return workDtos;
         }

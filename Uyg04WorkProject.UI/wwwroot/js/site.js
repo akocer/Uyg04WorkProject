@@ -1,7 +1,7 @@
 ﻿var token = localStorage.getItem("token")
 var userRoles = [];
-
-
+var apiUrl = "https://localhost:7096/";
+var userId=";"
 
 if (token == null) {
 
@@ -14,7 +14,9 @@ if (token == null) {
     var payload = parseJwt(token);
     var username = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
     userRoles = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
+    var userPicUrl = apiUrl + "Profile/" + payload["userPicUrl"];
+    userId = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+    $("#userPic").attr("src", userPicUrl);
     $("#UserName").html(username);
 
     //console.log(userRoles);

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -39,7 +38,7 @@ namespace Uyg04WorkProject.API.Controllers
             var userDtos = _mapper.Map<List<UserDto>>(users);
             return userDtos;
         }
-        [HttpGet]
+        [HttpGet("{id}")]
         public UserDto GetById(string id)
         {
             var user = _userManager.Users.Where(s => s.Id == id).SingleOrDefault();
@@ -103,6 +102,7 @@ namespace Uyg04WorkProject.API.Controllers
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim("JWTID", Guid.NewGuid().ToString()),
+                new Claim("userPicUrl", user.PicUrl),
 
             };
 
@@ -150,7 +150,7 @@ namespace Uyg04WorkProject.API.Controllers
                 return result;
             }
 
-            var path = Path.Combine(_webHostEnvironment.ContentRootPath, "Files/Profile");
+            var path = Path.Combine(_webHostEnvironment.ContentRootPath, "wwwroot/Profile");
             string userPic = user.PicUrl;
 
             if (userPic != "profil.jpg")
